@@ -80,14 +80,14 @@ Outputs: `files-processed`.
     path: uploads/
 ```
 
-Uses [rembg](https://github.com/danielgatis/rembg), a real background-segmentation model, not a color/chroma-key trick, so it works on ordinary photo backgrounds. Defaults to the `u2netp` model (about 5MB, fast) so it stays quick in CI; pass `model: u2net` or `model: isnet-general-use` for noticeably better edge quality at the cost of a slower, larger one time download.
+Uses [rembg](https://github.com/danielgatis/rembg), a real background segmentation model, not a color or chroma key trick, so it works on ordinary photo backgrounds. Defaults to the `u2netp` model (about 5MB, fast) so it stays quick in CI; pass `model: u2net` or `model: isnet-general-use` for noticeably better edge quality at the cost of a slower, larger one time download.
 
 Output is always a PNG regardless of the input format, since only PNG can store the transparency this adds.
 
 Inputs: `path` (default `.`), `model` (default `u2netp`), `output-dir`, `suffix` (default `.nobg`), `recursive` (default `true`).
 Outputs: `files-processed`.
 
-Model downloads are cached automatically by rembg inside `~/.rembg`. Cache that directory with `actions/cache` between runs so repeat workflow runs do not re-download the model every time:
+Model downloads are cached automatically by rembg inside `~/.rembg`. Cache that directory with `actions/cache` between runs so repeat workflow runs do not download the model again every time:
 
 ```yaml
 - uses: actions/cache@v4
@@ -97,7 +97,7 @@ Model downloads are cached automatically by rembg inside `~/.rembg`. Cache that 
 - uses: crxigzah/craigsimagetoolkit/remove-bg@v1
 ```
 
-## Auto-committing changes
+## Committing changes automatically
 
 None of these actions commit anything themselves, on purpose, they only touch files on the runner's checkout. Pair one with [`stefanzweifel/git-auto-commit-action`](https://github.com/stefanzweifel/git-auto-commit-action) to persist the result back to the repository:
 
