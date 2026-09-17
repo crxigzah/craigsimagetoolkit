@@ -1,0 +1,65 @@
+name: 'Image Blur'
+description: 'Apply a Gaussian blur to whole images'
+author: 'crxigzah'
+branding:
+  icon: 'droplet'
+  color: 'gray-dark'
+
+inputs:
+  path:
+    description: 'Image file or directory to blur'
+    required: false
+    default: '.'
+  radius:
+    description: 'Blur radius in pixels, higher is blurrier'
+    required: false
+    default: '8'
+  suffix:
+    description: 'Filename suffix before the extension'
+    required: false
+    default: '.blurred'
+  output-dir:
+    description: 'Write blurred images here instead of alongside the originals'
+    required: false
+    default: ''
+  in-place:
+    description: 'Overwrite the original file instead of writing a new one (destructive)'
+    required: false
+    default: 'false'
+  recursive:
+    description: 'Search subdirectories of path as well'
+    required: false
+    default: 'true'
+
+outputs:
+  files-processed:
+    description: 'Number of image files blurred'
+    value: ${{ steps.blur.outputs.files-processed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r "${{ github.action_path }}/requirements.txt"
+
+    - name: Blur images
+      id: blur
+      shell: bash
+      run: |
+        args=(--path "${{ inputs.path }}" --radius "${{ inputs.radius }}" --suffix "${{ inputs.suffix }}")
+        if [ -n "${{ inputs.output-dir }}" ]; then
+          args+=(--output-dir "${{ inputs.output-dir }}")
+        fi
+        if [ "${{ inputs.in-place }}" = "true" ]; then
+          args+=(--in-place)
+        fi
+        if [ "${{ inputs.recursive }}" = "false" ]; then
+          args+=(--no-recursive)
+        fi
+        python "${{ github.action_path }}/blur.py" "${args[@]}"

@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        module: [compress, resize, blur, remove-bg]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache rembg models
+        if: matrix.module == 'remove-bg'
+        uses: actions/cache@v4
+        with:
+          path: ~/.rembg
+          key: rembg-models
+
+      - name: Install dependencies
+        run: |
+          pip install -r ${{ matrix.module }}/requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: python -m pytest ${{ matrix.module }}/tests/ -v

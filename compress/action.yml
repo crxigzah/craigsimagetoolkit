@@ -1,0 +1,57 @@
+name: 'PNG Compressor'
+description: 'Losslessly compress PNG images with oxipng, in place or as a PR check'
+author: 'crxigzah'
+branding:
+  icon: 'image'
+  color: 'green'
+
+inputs:
+  path:
+    description: 'File or directory to search for PNGs'
+    required: false
+    default: '.'
+  level:
+    description: 'Oxipng optimization level, 0 (fastest) to 6 (smallest)'
+    required: false
+    default: '4'
+  recursive:
+    description: 'Search subdirectories of path as well'
+    required: false
+    default: 'true'
+  check:
+    description: 'Report savings without modifying files; fails the step if any file could shrink further'
+    required: false
+    default: 'false'
+
+outputs:
+  files-processed:
+    description: 'Number of PNG files found and processed'
+    value: ${{ steps.compress.outputs.files-processed }}
+  bytes-saved:
+    description: 'Total bytes saved across all processed files'
+    value: ${{ steps.compress.outputs.bytes-saved }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r "${{ github.action_path }}/requirements.txt"
+
+    - name: Compress PNGs
+      id: compress
+      shell: bash
+      run: |
+        args=(--path "${{ inputs.path }}" --level "${{ inputs.level }}")
+        if [ "${{ inputs.recursive }}" = "false" ]; then
+          args+=(--no-recursive)
+        fi
+        if [ "${{ inputs.check }}" = "true" ]; then
+          args+=(--check)
+        fi
+        python "${{ github.action_path }}/compress.py" "${args[@]}"

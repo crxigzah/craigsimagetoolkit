@@ -1,0 +1,12 @@
+{
+  "instagram-post": {"width": 1080, "height": 1080, "description": "Instagram square feed post"},
+  "instagram-profile": {"width": 320, "height": 320, "description": "Instagram profile picture"},
+  "linkedin-post": {"width": 1200, "height": 1200, "description": "LinkedIn square image post"},
+  "linkedin-profile": {"width": 400, "height": 400, "description": "LinkedIn profile picture"},
+  "discord-avatar": {"width": 512, "height": 512, "description": "Discord profile picture"},
+  "discord-server-icon": {"width": 512, "height": 512, "description": "Discord server icon"},
+  "twitter-post": {"width": 1200, "height": 675, "description": "X (Twitter) timeline image post"},
+  "twitter-profile": {"width": 400, "height": 400, "description": "X (Twitter) profile picture"},
+  "facebook-profile": {"width": 720, "height": 720, "description": "Facebook profile picture"},
+  "youtube-thumbnail": {"width": 1280, "height": 720, "description": "YouTube video thumbnail"}
+}

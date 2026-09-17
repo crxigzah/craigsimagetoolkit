@@ -1,0 +1,79 @@
+name: 'Image Resizer'
+description: 'Resize images to common social platform sizes or a custom width/height'
+author: 'crxigzah'
+branding:
+  icon: 'crop'
+  color: 'purple'
+
+inputs:
+  path:
+    description: 'Image file or directory to resize'
+    required: false
+    default: '.'
+  preset:
+    description: 'Named preset (see presets.json), e.g. instagram-post, discord-avatar. Mutually exclusive with size.'
+    required: false
+    default: ''
+  size:
+    description: 'Custom size as WIDTHxHEIGHT, e.g. 800x600. Mutually exclusive with preset.'
+    required: false
+    default: ''
+  mode:
+    description: '"cover" fills the frame and crops overflow (default); "contain" fits the whole image and pads'
+    required: false
+    default: 'cover'
+  background:
+    description: 'Padding color for mode: contain'
+    required: false
+    default: 'white'
+  output-dir:
+    description: 'Write resized images here instead of alongside the originals'
+    required: false
+    default: ''
+  in-place:
+    description: 'Overwrite the original file instead of writing a new one (destructive)'
+    required: false
+    default: 'false'
+  recursive:
+    description: 'Search subdirectories of path as well'
+    required: false
+    default: 'true'
+
+outputs:
+  files-processed:
+    description: 'Number of image files resized'
+    value: ${{ steps.resize.outputs.files-processed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r "${{ github.action_path }}/requirements.txt"
+
+    - name: Resize images
+      id: resize
+      shell: bash
+      run: |
+        args=(--path "${{ inputs.path }}" --mode "${{ inputs.mode }}" --background "${{ inputs.background }}")
+        if [ -n "${{ inputs.preset }}" ]; then
+          args+=(--preset "${{ inputs.preset }}")
+        fi
+        if [ -n "${{ inputs.size }}" ]; then
+          args+=(--size "${{ inputs.size }}")
+        fi
+        if [ -n "${{ inputs.output-dir }}" ]; then
+          args+=(--output-dir "${{ inputs.output-dir }}")
+        fi
+        if [ "${{ inputs.in-place }}" = "true" ]; then
+          args+=(--in-place)
+        fi
+        if [ "${{ inputs.recursive }}" = "false" ]; then
+          args+=(--no-recursive)
+        fi
+        python "${{ github.action_path }}/resize.py" "${args[@]}"

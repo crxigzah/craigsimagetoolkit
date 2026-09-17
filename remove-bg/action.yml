@@ -1,0 +1,58 @@
+name: 'Background Remover'
+description: 'Remove the background from photos, leaving a transparent PNG'
+author: 'crxigzah'
+branding:
+  icon: 'scissors'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Image file or directory to process'
+    required: false
+    default: '.'
+  model:
+    description: 'rembg model name (default: u2netp, small and fast). Also common: u2net, isnet-general-use'
+    required: false
+    default: 'u2netp'
+  output-dir:
+    description: 'Write output PNGs here instead of alongside the originals'
+    required: false
+    default: ''
+  suffix:
+    description: 'Filename suffix before .png'
+    required: false
+    default: '.nobg'
+  recursive:
+    description: 'Search subdirectories of path as well'
+    required: false
+    default: 'true'
+
+outputs:
+  files-processed:
+    description: 'Number of image files processed'
+    value: ${{ steps.remove-bg.outputs.files-processed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r "${{ github.action_path }}/requirements.txt"
+
+    - name: Remove backgrounds
+      id: remove-bg
+      shell: bash
+      run: |
+        args=(--path "${{ inputs.path }}" --model "${{ inputs.model }}" --suffix "${{ inputs.suffix }}")
+        if [ -n "${{ inputs.output-dir }}" ]; then
+          args+=(--output-dir "${{ inputs.output-dir }}")
+        fi
+        if [ "${{ inputs.recursive }}" = "false" ]; then
+          args+=(--no-recursive)
+        fi
+        python "${{ github.action_path }}/remove_bg.py" "${args[@]}"
