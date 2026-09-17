@@ -23,7 +23,7 @@ jobs:
           pip install pyinstaller
 
       - name: Build with PyInstaller
-        run: pyinstaller gui/app.spec
+        run: pyinstaller app.spec
         working-directory: gui
 
       - name: Upload build artifact
