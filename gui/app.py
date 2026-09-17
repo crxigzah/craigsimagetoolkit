@@ -302,6 +302,20 @@ class ToolApp(tk.Tk):
 
 
 def main():
+    if "--self-test" in sys.argv:
+        # Building the full window (not just importing this module, which
+        # already happened just by getting this far) exercises exactly the
+        # failure class a frozen build can hit that a plain successful
+        # `pyinstaller app.spec` does not catch: an import-time crash deep
+        # inside a bundled dependency (e.g. missing package metadata -- see
+        # app.spec's copy_metadata('pymatting') comment for a bug that hit
+        # exactly this). See .github/workflows/build-gui.yml, which runs
+        # this against the actual built .exe on a real Windows runner.
+        app = ToolApp()
+        app.update_idletasks()
+        app.destroy()
+        print("SELF-TEST OK")
+        return
     app = ToolApp()
     app.mainloop()
 

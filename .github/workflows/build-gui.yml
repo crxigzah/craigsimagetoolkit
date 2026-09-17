@@ -26,6 +26,28 @@ jobs:
         run: pyinstaller app.spec
         working-directory: gui
 
+      # Building successfully is not enough on its own -- a frozen build
+      # can still crash the instant it launches (an import-time error deep
+      # inside a bundled dependency, e.g. missing package metadata; see
+      # app.spec's copy_metadata('pymatting') comment for a real one this
+      # caught). --self-test builds the actual window and exits instead of
+      # opening it, so this runs against the real .exe on a real Windows
+      # machine before anything gets published.
+      - name: Smoke test the built exe
+        shell: pwsh
+        run: |
+          $output = & "dist\craigsimagetoolkit.exe" --self-test 2>&1 | Out-String
+          Write-Output $output
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Self-test exited with code $LASTEXITCODE"
+            exit 1
+          }
+          if ($output -notmatch "SELF-TEST OK") {
+            Write-Error "Self-test did not print SELF-TEST OK"
+            exit 1
+          }
+        working-directory: gui
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
