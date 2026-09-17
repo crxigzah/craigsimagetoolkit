@@ -1,6 +1,6 @@
 # craigsimagetoolkit
 
-Four small, independent GitHub Actions for common image tasks. Each lives in its own directory with its own `action.yml`, so you can use any one of them on its own without pulling in the others.
+Four small, independent GitHub Actions for common image tasks, plus a desktop GUI that wraps the same logic for using them without writing a workflow file at all. Each Action lives in its own directory with its own `action.yml`, so you can use any one of them on its own without pulling in the others.
 
 | Action | What it does |
 |---|---|
@@ -8,6 +8,7 @@ Four small, independent GitHub Actions for common image tasks. Each lives in its
 | [`resize`](resize) | Resize images to common social platform sizes or a custom width/height |
 | [`blur`](blur) | Apply a Gaussian blur to whole images |
 | [`remove-bg`](remove-bg) | Remove the background from photos, leaving a transparent PNG |
+| [`gui`](gui) | A Tkinter desktop app covering all four, packaged as a standalone Windows `.exe` |
 
 ## compress
 
@@ -97,6 +98,29 @@ Model downloads are cached automatically by rembg inside `~/.rembg`. Cache that 
 - uses: crxigzah/craigsimagetoolkit/remove-bg@v1
 ```
 
+## gui
+
+A desktop app covering all four tools: compress, resize, blur, and remove background, each as its own tab, with a shared file list you load once and run any operation against. Built with Tkinter, so it packages into a single standalone Windows `.exe` with no separate Python install needed to run it.
+
+Download the latest build from the [Releases page](../../releases) once one exists, or build it yourself:
+
+```bash
+cd gui
+pip install -r requirements.txt
+python app.py
+```
+
+To build the `.exe` yourself instead of downloading a release:
+
+```bash
+pip install pyinstaller
+pyinstaller gui/app.spec
+```
+
+The `.exe` ends up in `gui/dist/`. Pushing a tag matching `gui-v*` (e.g. `gui-v1.0.0`) also triggers [`.github/workflows/build-gui.yml`](.github/workflows/build-gui.yml), which builds it on a real Windows runner and attaches it to a GitHub Release automatically, so you never have to build it by hand.
+
+The GUI reuses the exact same `compress.py`/`resize.py`/`blur.py` modules the Actions run, imported directly rather than duplicated, so there is one implementation of each operation to keep correct and tested.
+
 ## Committing changes automatically
 
 None of these actions commit anything themselves, on purpose, they only touch files on the runner's checkout. Pair one with [`stefanzweifel/git-auto-commit-action`](https://github.com/stefanzweifel/git-auto-commit-action) to persist the result back to the repository:
@@ -132,4 +156,4 @@ pip install pytest
 python -m pytest tests/ -v
 ```
 
-CI (`.github/workflows/test.yml`) runs all four test suites on every push and pull request.
+CI (`.github/workflows/test.yml`) runs all five test suites (compress, resize, blur, remove-bg, gui) on every push and pull request. The `gui` module's tests need a display, so CI runs them under `xvfb-run`; on a normal desktop they just work.

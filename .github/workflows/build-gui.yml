@@ -1,0 +1,39 @@
+name: Build GUI
+
+on:
+  push:
+    tags:
+      - 'gui-v*'
+  workflow_dispatch: {}
+
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r gui/requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller gui/app.spec
+        working-directory: gui
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: craigsimagetoolkit-windows
+          path: gui/dist/craigsimagetoolkit.exe
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/gui-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: gui/dist/craigsimagetoolkit.exe

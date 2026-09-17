@@ -23,7 +23,15 @@ from pathlib import Path
 
 from PIL import Image
 
-PRESETS_PATH = Path(__file__).resolve().parent / "presets.json"
+# A frozen PyInstaller build's __file__ doesn't point at a real
+# extracted file (bundled pure-python modules live inside the zipped
+# PYZ archive), so presets.json has to be found relative to the
+# temporary extraction directory instead when running as a bundled app.
+# See gui/app.spec, which places presets.json at that same top level.
+if getattr(sys, "frozen", False):
+    PRESETS_PATH = Path(sys._MEIPASS) / "presets.json"
+else:
+    PRESETS_PATH = Path(__file__).resolve().parent / "presets.json"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 
 

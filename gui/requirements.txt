@@ -1,0 +1,3 @@
+Pillow>=10.0.0
+pyoxipng>=9.0.0
+rembg[cpu]>=2.0.0
